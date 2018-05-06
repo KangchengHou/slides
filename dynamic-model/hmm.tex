@@ -1,0 +1,20 @@
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+      % Nodes
+      % parameters and data
+      \node[latent] (X1) {$x_{t-1}$};
+      \node[latent,xshift=2cm] (X2) {$x_{t}$};
+      \node[latent,xshift=4cm] (X3) {$x_{t+1}$};
+      \node[obs, yshift=-2cm] (O1) {$y_{t-1}$};
+      \node[obs, yshift=-2cm, xshift=2cm] (O2) {$y_t$};
+      \node[obs, yshift=-2cm, xshift=4cm] (O3) {$y_{t+1}$};
+      \edge{X1}{O1}
+      \edge{X2}{O2}
+      \edge{X3}{O3}
+      \edge{X1}{X2}
+      \edge{X2}{X3} 
+
+    \end{tikzpicture}
+    \end{figure}

@@ -1,0 +1,9 @@
+\begin{thebibliography}{}
+
+\bibitem[Tran et~al., 2017]{tran2017deep}
+Tran, D., Hoffman, M.~D., Saurous, R.~A., Brevdo, E., Murphy, K., and Blei,
+  D.~M. (2017).
+\newblock Deep probabilistic programming.
+\newblock {\em arXiv preprint arXiv:1701.03757}.
+
+\end{thebibliography}

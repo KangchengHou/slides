@@ -64,5 +64,15 @@ p(\text{mistake}) & = p(x \in \mathcal{R}_1, C_2) + p(x \in \mathcal{R}_2, C_1) 
 Note that $p(x)$ is shared for classfication to $C_1$ or $C_2$, so we just assign the $x$ to the label whose $P(C_i | x)$ is lower.(Otherwise we can interchange the label to get lower classification error.) In more sophisticated scenarios we may not want to optimize classfication error but rather some weighted function.
 \end{frame}
 
+\begin{frame}[allowframebreaks]{Variational Inference}
+We are interested in posterior distribution, but it is often too complicated and intractable, we find the member $q^\ast(\theta)$ of family $\mathcal{Q}$ over latent variables that is closest to true posterior. This transform the problem of finding the posterior to the problem of optimization.
+$$q^\ast(\theta) = \argmin_{q(\theta) \in \mathcal{Q}} KL(q(\theta) || p(\theta | x))$$
+Why KL divergence then?
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Variational Autoencoder}
+
+\end{frame}
+
 
 \end{document}
