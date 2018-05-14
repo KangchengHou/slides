@@ -1,0 +1,27 @@
+\begin{frame}{Understanding Black-box Predictions via Influence Functions \cite{koh2017understanding}}
+Goal: answer the question: "Why did the system make this prediction". One way to answer it is "How would the model's predictions change if we remove the training point $z_i = (x_i, y_i)$.
+We first assume the empirical risk is twice-differentiable and strictly convex.
+\begin{itemize}
+\item I do a summary of the paper.
+\item I run an experiment with MNIST dataset.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Upweighting a training point}
+Instead of answer question of $\hat{\theta}_{-z} - \hat{\theta}$. We can ask question like $\hat{\theta}_{\epsilon, z} = \argmin_\theta \frac{1}{n} \sum_{i=1}^n L(z_i, \theta) + \epsilon L(z,\theta)$. 
+It can be proved that 
+$$\frac{d \hat{\theta}_{\epsilon, z}}{d \epsilon} |_{\epsilon=0} = -H^{-1}_{\hat{\theta}} \nabla_\theta L(z, \hat{\theta})$$
+This can be calculated \textbf{without retraining the model}.
+Note that $\hat{\theta}_{\frac{1}{n}, z} = \hat{\theta}_{-z}$, we can use Taylor expansion of $\hat{\theta}$ to approximate $$\hat{\theta}_{-z} - \hat{\theta} = -\frac{1}{n} \mathcal{I}_{\text{up, params}}(z)$$.
+Now we know the influence of training point $z$ on the parameters of the model $\theta$. Next we investigate how upweighting $z$ changes function of $\hat{\theta}$. Applying the chain rule,
+\begin{align*}
+\mathcal{I}_{\text{up, loss}}(z, z_\text{test}) & = \frac{dL(z_\text{test}, \hat{\theta}_{\epsilon, z})}{d \epsilon} |_{\epsilon = 0} \\ 
+& = \nabla_\theta (z_\text{test}, \hat{\theta})^\top \frac{d \hat{\theta}_{\epsilon, z}}{d\epsilon}|_{\epsilon = 0} \\ 
+& = -\nabla_\theta L(z_\text{test}, \hat{\theta})^\top H_{\hat{\theta}}^{-1} \nabla_\theta L(z, \hat{\theta})
+\end{align*}
+\end{frame}
+\begin{frame}[allowframebreaks]{Perturing a training input}
+We want to know how pertubing a data point $(x,y) \rightarrow (x + \delta, y)$ will influence the estimated parameter. 
+We define 
+$$\hat{\theta}_{\epsilon, z_\delta, -z} = \argmin $$
+\end{frame}

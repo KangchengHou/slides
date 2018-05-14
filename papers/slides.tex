@@ -4,31 +4,22 @@
 \usepackage{amsfonts}
 \usepackage[export]{adjustbox}
 \usepackage[utf8]{inputenc}
-
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
 
 %Information to be included in the title page:
 \usecolortheme{seahorse}
 \title{Reading Papers}
-\author{Thomas Bayes}
-\institute{
-\includegraphics[height=.3\textheight]{../bayes.png}%
-}
+\author{Kangcheng Hou}
+\institute{Zhejiang University}
 \date{\today}
 
     
 \begin{document}
     
 \frame{\titlepage}
-
-\begin{frame}{Deep Probabilistic Programming\cite{tran2017deep}}
-\begin{itemize}
-\item You can take a DL model and make it probabilistic. (Section 3 assign prior probability on the parameter $\theta$ and infer the posterior.)
-\item You can integrate the DL module in probabilistic models. (Section 4 introduced variational autoencoders.)
-\item Advantages from probabilistic models(Section 5.1) 
-\item Advantages from deep models(Section 5.2)
-\end{itemize}
-\end{frame}
-
+\input{tran2017deep}
+\input{koh2017understanding}
+\input{li2017convergence}
 
 
 \begin{frame}[allowframebreaks]{References}
