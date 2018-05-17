@@ -5,6 +5,7 @@
 \usepackage[export]{adjustbox}
 \usepackage[utf8]{inputenc}
 \usepackage{tikz} 
+\usepackage{bm}
 \usetikzlibrary{bayesnet}
 
 \input{../command.tex}
@@ -88,11 +89,44 @@ Will not introduce the third method here.
 \end{frame}
 
 \begin{frame}[allowframebreaks]{Practical inference in Bayesian neural networks}
+Previous work use fully fatorised Gaussian approximating distributions and characteristic function estimator in the approximation. This work will rely on the pathwise derivative estimator instead, so can make use of more interesting non-Gaussian approximating distributions. And to avoid losing weight correlations, fatorise the distribution for each weight row $\mathbf{w}_{l,i}$ in each weight matrix $\mathbf{W}_l$. With these two improvements, we can see that it is closely tied to SRT.
 
+\framebreak
+
+Note that we are going to optimize the quantity
+$$\mathcal{L}_{\text{VI}} (\theta) = - \sum_{i=1}^N \int q_\theta(\mathbf{w}) \ln (p(\mathbf{y}_i | f^\mathbf{w} (\mathbf{x}_i))) d\mathbf{w} + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w}))$$
+which can be optimized using batch information
+$$\hat{\mathcal{L}}_{\text{VI}} (\theta) = - \frac{N}{M}\sum_{i\in S} \int q_\theta(\mathbf{w}) \ln (p(\mathbf{y}_i | f^\mathbf{w} (\mathbf{x}_i))) d\mathbf{w} + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w}))$$
+We reparametrize each $q_{\theta_{l,i}}(\mathbf{w}_{l,i})$ as $\bm{w}_{l,i} = g(\theta_{l,i}, \epsilon_{l,i})$ with some specified $p(\epsilon_{l,i})$. We write $p(\bm{\epsilon}) = \prod_{l,i}(\epsilon_{l,i})$ and $\mathbf{w} = g(\theta, \bm{\epsilon})$. 
+
+\framebreak
+
+Thus our objective function is 
+\begin{align*}
+\hat{\mathcal{L}}_{\text{VI}} (\theta) & = - \frac{N}{M}\sum_{i\in S} \int q_\theta(\mathbf{w}) \ln p(\mathbf{y}_i | f^\mathbf{w} (\mathbf{x}_i)) d\mathbf{w} + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w})) \\
+& = - \frac{N}{M}\sum_{i\in S} \int p(\bm{\epsilon}) \ln p(\mathbf{y}_i | f^{g(\theta, \bm{\epsilon})} (\mathbf{x}_i)) d\bm{\epsilon} + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w}))
+\end{align*}
+Replace the expected log likelihood term with its stochastic estimator, we get the MC estimator:
+$$\hat{\mathcal{L}}_{\text{MC}} (\theta)  = - \frac{N}{M}\sum_{i\in S}  q_\theta(\mathbf{w}) \ln p(\mathbf{y}_i | f^\mathbf{w} (\mathbf{x}_i)) + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w}))$$
+And 
+$$\mathbb{E}_{S, \bm{\epsilon}} [\hat{\mathcal{L}}_{\text{MC}}] = \hat{\mathcal{L}}_{\text{VI}}$$
+Optimizing $\hat{\mathcal{L}}_{\text{MC}}$ w.r.t $\theta$ would converge to the same optima as optimizing $\mathcal{L}_{\text{VI}}$.
+
+\framebreak
+
+To make predictive distribution, we do the following approximation:
+\begin{align*}
+p(\mathbf{y}^\ast | \mathbf{x}^\ast, \mathbf{X}, \mathbf{Y}) & = \int p(\mathbf{y}^\ast | \mathbf{x}^\ast, \mathbf{w}) p(\mathbf{w} | \mathbf{X}, \mathbf{Y}) d\mathbf{w} \\ 
+& \approx \int p(\mathbf{y}^\ast | \mathbf{x}^\ast, \mathbf{w}) q_\theta(\mathbf{w})d\mathbf{w} \\ 
+& \approx \frac{1}{T} \sum_{t=1}^T p(\mathbf{y}^\ast | \mathbf{x}^\ast, \hat{\mathbf{w}}_t)  \qquad \hat{\mathbf{w}}_t \sim q_\theta(\mathbf{w})
+\end{align*}
 
 \end{frame}
 
+\begin{frame}[allowframebreaks]{Stochastic regularisation techniques}
+Stochastic regularization techniques are techniques used to regularize deep learning models through the injection of stochastic noise into the model.
 
+\end{frame}
 
 
 
