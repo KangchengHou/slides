@@ -107,9 +107,9 @@ Thus our objective function is
 & = - \frac{N}{M}\sum_{i\in S} \int p(\bm{\epsilon}) \ln p(\mathbf{y}_i | f^{g(\theta, \bm{\epsilon})} (\mathbf{x}_i)) d\bm{\epsilon} + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w}))
 \end{align*}
 Replace the expected log likelihood term with its stochastic estimator, we get the MC estimator:
-$$\hat{\mathcal{L}}_{\text{MC}} (\theta)  = - \frac{N}{M}\sum_{i\in S}  q_\theta(\mathbf{w}) \ln p(\mathbf{y}_i | f^\mathbf{w} (\mathbf{x}_i)) + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w}))$$
+$$\hat{\mathcal{L}}_{\text{MC}} (\theta)  = - \frac{N}{M}\sum_{i\in S}  \ln p(\mathbf{y}_i | f^{g(\theta, \bm{\epsilon})} (\mathbf{x}_i)) + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w}))$$
 And 
-$$\mathbb{E}_{S, \bm{\epsilon}} [\hat{\mathcal{L}}_{\text{MC}}] = \hat{\mathcal{L}}_{\text{VI}}$$
+$$\mathbb{E}_{S, \bm{\epsilon}} [\hat{\mathcal{L}}_{\text{MC}}] = \mathcal{L}_{\text{VI}}$$
 Optimizing $\hat{\mathcal{L}}_{\text{MC}}$ w.r.t $\theta$ would converge to the same optima as optimizing $\mathcal{L}_{\text{VI}}$.
 
 \framebreak
@@ -124,7 +124,64 @@ p(\mathbf{y}^\ast | \mathbf{x}^\ast, \mathbf{X}, \mathbf{Y}) & = \int p(\mathbf{
 \end{frame}
 
 \begin{frame}[allowframebreaks]{Stochastic regularisation techniques}
-Stochastic regularization techniques are techniques used to regularize deep learning models through the injection of stochastic noise into the model.
+Stochastic regularization techniques are techniques used to regularize deep learning models through the injection of stochastic noise into the model. We will try to derive the fact that dropout is equivalent to doing variational inference on the neural net. \\
+
+We will introduce a simple situation where the output $$\mathbf{y} = \sigma(\mathbf{x} \mathbf{M}_1 + \mathbf{b})\mathbf{M}_2$$ For every forward pass in neural net, we sample random vector of dimension the same of input $\mathbf{x}$ and latent variable $\sigma(\mathbf{x} \mathbf{M}_1 + \mathbf{b})$, $\bm{\epsilon}_1$ and $\bm{\epsilon}_2$ respectively. Then we do element wise product to the corresponding variable. So the output becomes 
+$$\hat{\mathbf{y}} = (\sigma((\mathbf{x} \odot \hat{\bm{\epsilon}_1)} \mathbf{M}_1 + \mathbf{b}) \odot \hat{\bm{\epsilon}_2)} \mathbf{M}_2$$
+From above, it seems that noise were applied to the feature space, say, $\mathbf{x}, \mathbf{h}$. But we can transform the expression such that the noise were applied to the weight space as follows:
+\begin{align*}
+\hat{\mathbf{y}} & = \hat{\mathbf{h}} \mathbf{M}_2 \\ 
+& = (\mathbf{h} \odot \hat{\bm{\epsilon}}_2) \mathbf{M}_2 \\ 
+& = (\mathbf{h} \cdot \text{diag}(\hat{\bm{\epsilon}}_2)) \mathbf{M}_2 \\ 
+& = \mathbf{h} \cdot (\text{diag}(\hat{\bm{\epsilon}}_2) \mathbf{M}_2) \\ 
+& = \sigma(\mathbf{x} (\text{diag}(\hat{\bm{\epsilon}}_1) \mathbf{M}_1) + \mathbf{b}) (\text{diag}(\hat{\bm{\epsilon}}_2) \mathbf{M}_2)
+\end{align*}
+With $\text{diag}(\hat{\bm{\epsilon}}_1) \mathbf{M}_1$ as $\hat{\mathbf{W}}_1$ and $\text{diag}(\hat{\bm{\epsilon}}_2) \mathbf{M}_2$ as $\hat{\mathbf{W}}_2$
+We can write 
+$$\hat{\mathbf{y}} = \sigma(\mathbf{x} \hat{\mathbf{W}}_1 + \mathbf{b}) \hat{\mathbf{W}}_2$$
+It can be seen as the randomized version of normal forward propagation
+$$\mathbf{y} = \sigma(\mathbf{x} \mathbf{M}_1 + \mathbf{b}) \mathbf{M}_2$$
+
+\framebreak
+Now we show the relation between \textbf{dropout} and \textbf{variational inference}. We first note that we want to optimize the target of 
+$$\mathcal{L}(\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}) := E^{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}}(\mathbf{X}, \mathbf{Y}) + \lambda_1 || \mathbf{W}_1||^2 + \lambda_2 || \mathbf{W}_2||^2 + \lambda_3 ||\mathbf{b}||^2$$
+In dropout scenerio, it will be 
+\begin{align*}
+\hat{\mathcal{L}}_{\text{dropout}}(\mathbf{M}_1, \mathbf{M}_2, \mathbf{b}) & := \frac{1}{M} \sum_{i \in S}E^{\hat{\mathbf{W}}^i_1, \hat{\mathbf{W}}^i_2, \mathbf{b}}(\mathbf{x}_i, \mathbf{y}_i) \\
+& + \lambda_1 || \mathbf{M}_1||^2 + \lambda_2 || \mathbf{M}_2||^2 + \lambda_3 ||\mathbf{b}||^2
+\end{align*}
+It can be shown that 
+\begin{align*}
+E^{\mathbf{M}_1, \mathbf{M}_2, \mathbf{b}}(\mathbf{x}, \mathbf{y}) & = \frac{1}{2} || \mathbf{y} - \mathbf{f}^{\mathbf{M}_1, \mathbf{M}_2, \mathbf{b}}(\mathbf{x})||^2 \\
+& = - \frac{1}{\tau} \log p(\mathbf{y} | \mathbf{f}^{\mathbf{M}_1, \mathbf{M}_2, \mathbf{b}}(\mathbf{x})) + \text{const}
+\end{align*}
+where $$p(\mathbf{y} | \mathbf{f}^{\mathbf{M}_1, \mathbf{M}_2, \mathbf{b}}(\mathbf{x})) = \mathcal{N}(\mathbf{y} ; \mathbf{f}^{\mathbf{M}_1, \mathbf{M}_2, \mathbf{b}}(\mathbf{x})), \tau^{-1} I)$$
+
+\framebreak
+Plug the quantity into the dropout loss expression,
+\begin{align*}
+\hat{\mathcal{L}}_{\text{dropout}}(\mathbf{M}_1, \mathbf{M}_2, \mathbf{b}) & := -\frac{1}{M \tau}  \sum_{i \in S}\log p(\mathbf{y} | \mathbf{f}^{g(\theta; \hat{\bm{\epsilon}_i})}(\mathbf{x}_i))  \\
+    & + \lambda_1 || \mathbf{M}_1||^2 + \lambda_2 || \mathbf{M}_2||^2 + \lambda_3 ||\mathbf{b}||^2
+\end{align*}
+Here $$\{ \hat{\mathbf{W}}_1^i, \hat{\mathbf{W}}_2^i, \mathbf{b} \} =: g(\theta, \hat{\bm{\epsilon}}_i)$$
+% We want to optimize the loss function w.r.t the parameters of the model $\theta = \{ \mathbf{M}_1, \mathbf{M}_2, \mathbf{b} \}$.
+% \begin{align*}
+% \frac{\partial}{\partial \theta}\hat{\mathcal{L}}_{\text{dropout}}(\theta) & := -\frac{1}{M \tau}  \sum_{i \in S}\frac{\partial}{\partial \theta}\log p(\mathbf{y} | \mathbf{f}^{g(\theta; \hat{\bm{\epsilon}_i})}(\mathbf{x}_i))  \\
+%     & + \frac{\partial}{\partial \theta} (\lambda_1 || \mathbf{M}_1||^2 + \lambda_2 || \mathbf{M}_2||^2 + \lambda_3 ||\mathbf{b}||^2)
+% \end{align*}
+
+Recall that the MC estimator for the loss is 
+$$\hat{\mathcal{L}}_{\text{MC}} (\theta)  = - \frac{N}{M}\sum_{i\in S}  \ln p(\mathbf{y}_i | f^{g(\theta, \bm{\epsilon})} (\mathbf{x}_i)) + \text{KL}(q_\theta(\mathbf{w}) || p(\mathbf{w}))$$
+The differences are the normalizing constant and the KL divergence.
+If we define the prior $p(\mathbf{w})$ s.t. the following holds:
+$$\frac{\partial}{\partial \theta} KL(q_\theta (\mathbf{w}) || p(\mathbf{w})) = \frac{\partial}{\partial \theta } N \tau (\lambda_1 || \mathbf{M}_1||^2 + \lambda_2 || \mathbf{M}_2||^2 + \lambda_3 ||\mathbf{b}||^2)$$
+Then the two algorithm will be the same.
+
+\framebreak 
+
+So what have we found just now?
+
+
 
 \end{frame}
 
