@@ -6,6 +6,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage{tikz} 
 \usepackage{bm}
+\usepackage{xkeyval}
+\usepackage{todonotes}
+\usepackage{mathtools}
+\presetkeys{todonotes}{inline}{}
+
 \usetikzlibrary{bayesnet}
 
 \input{../command.tex}
@@ -179,12 +184,49 @@ Then the two algorithm will be the same.
 
 \framebreak 
 
-So what have we found just now?
+So what have we found just now? We showed that the dropout NN is equivalent to posterior distribution reparametrized as follows
+$$ g(\theta, \hat{\bm{\epsilon}}_i) := \{ \hat{\mathbf{W}}_1^i, \hat{\mathbf{W}}_2^i, \mathbf{b} \}$$
+where $$\hat{\bm{\epsilon}}_i \sim \text{Bernolli}(p_i)$$ 
+With this approximated posterior distribution, we can optimize w.r.t $\theta$ to get an optimal approximated posterior distribution.
+\end{frame}
 
+\begin{frame}[allowframebreaks]{KL condition}
+For VI to result in an same optimization as dropout NN, the following KL condition has to be satisfied.
+
+$$\frac{\partial}{\partial \theta} KL(q_\theta (\mathbf{w}) || p(\mathbf{w})) = \frac{\partial}{\partial \theta } N \tau (\lambda_1 || \mathbf{M}_1||^2 + \lambda_2 || \mathbf{M}_2||^2 + \lambda_3 ||\mathbf{b}||^2)$$
+Solving this should not be an easy problem. We need to choose $q_\theta(\mathbf{w})$ and $p(\mathbf{w})$ properly to achieve this KL condition. For example, it can be shown that setting the model prior to 
+$$p(\mathbf{w}) = \prod_{i=1}^L p(\mathbf{W}_i) = \prod_{i=1}^L \mathcal{N}(0, \mathbf{I} / l_i^2)$$
+in other words independent normal priors over each weight, with prior length-scale 
+$$l_i^2 = \frac{2N\tau \lambda_i}{1 - p_i}$$
+the KL condition approximately holds for a large enough number of hidden units and a bernoulli variational distribution.
+
+\end{frame}
+
+\begin{frame}{What is a prior length-scale?}
+    
 
 
 \end{frame}
 
+\begin{frame}[allowframebreaks]{Model uncertainty in Bayesian neural networks}
+We now show that the model uncertainty can be obtained from dropout NN models. Our approximate predictive distribution is given by 
+$$q_\theta^\ast(\mathbf{y}^\ast | \mathbf{x}^\ast) = \int p(\mathbf{y}^\ast | f^{\mathbf{w}}(\mathbf{x}^\ast)) q_\theta^\ast (\mathbf{w}) d\mathbf{w}$$
+where $q_\theta^\ast (\mathbf{w})$ is given by variational inference. It can be shown that given that the likelihood is Gaussian, 
+$$p(\mathbf{y}^\ast | \mathbf{f}^{\mathbf{w}}(\mathbf{x}^\ast)) = \mathcal{N} (\mathbf{y}^\ast ; \mathbf{f}^\mathbf{w}(\mathbf{x}^\ast), \tau^{-1} \mathbf{I})$$
+Then 
+$$\frac{1}{T} \sum_{t = 1}^T \mathbf{f}^{\hat{\mathbf{w}_t}}(\mathbf{x}^\ast) 
+\xrightarrow{T \rightarrow \infty} \mathbb{E}_{q_\theta^\ast(\mathbf{y}^\ast | \mathbf{x}^\ast)}[\mathbf{y}^\ast]$$
+This means we do forward pass $T$ times and get the average, and if $T \rightarrow \infty$, then the mean of the samples will be the same as that of predictive distribution.
 
+\framebreak 
 
+For the second moment, it can be shown that 
+$$\tau^{-1}\mathbf{I} + \frac{1}{T} \sum_{t = 1}^T \mathbf{f}^{\hat{\mathbf{w}_t}}(\mathbf{x}^\ast)^\top  \mathbf{f}^{\hat{\mathbf{w}_t}}(\mathbf{x}^\ast) \xrightarrow{T \rightarrow \infty} \mathbb{E}_{q_\theta^\ast(\mathbf{y}^\ast | \mathbf{x}^\ast)}[(\mathbf{y}^\ast)^\top (\mathbf{y}^\ast) ]$$
+This means if we do $T$ forward pass, we can get an estimation of the variance of approximate predictive distribution.
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Applications of Bayesian Deep Learning}
+We have linked stochastic regularisation techniques to approximate inference in BNN.    
+
+\end{frame}
 \end{document}
