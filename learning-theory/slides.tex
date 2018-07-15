@@ -1,0 +1,107 @@
+\documentclass{beamer}
+\usefonttheme[onlymath]{serif}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[export]{adjustbox}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz} 
+\usepackage{bm}
+\usepackage{xkeyval}
+\usepackage{todonotes}
+\usepackage{mathtools}
+\presetkeys{todonotes}{inline}{}
+
+\usetikzlibrary{bayesnet}
+
+\input{../command.tex}
+
+%Information to be included in the title page:
+\usecolortheme{seahorse}
+\title{PAC Learning Theory}
+\author{Kangcheng Hou}
+\institute{Zhejiang University}
+\date{\today}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\x}{\mathbf{x}}
+\begin{document}
+    
+\frame{\titlepage}
+
+\begin{frame}{Introduction}
+We will introduce the basic of computational learning theory. There are quite a lot concepts, so hold on tight.
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]{Definition}
+Genralization error
+$$E(h;\D) = P_{\x \sim \D}(h(\x) \neq y)$$
+Empirical Risk
+$$\hat{E}(h; \D) = \frac{1}{m}\sum_{i=1}^m \mathbb{I}(h(\x_i) \neq y_i )$$
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Useful Tools}
+Jensen inequality: for convex function $f$
+$$f(\E[x]) \le \E[f(x)]$$
+Hoeffding inequality: if $x_1, \dots, x_m$ are $m$ independent random variable and $0\le x_i \le 1$, then
+$$P(\frac{1}{m}\sum_{i=1}^m x_i - \frac{1}{m} \sum_{i=1}^m \E[x_i] \ge \epsilon) \le \exp(-2m\epsilon^2)$$
+
+
+McDiarmid inequality: if $x_1, \dots, x_m$ are $m$ independent random variable, and for $1 \le i \le m$, the function $f$ satisfies 
+$$\sup_{x_1, \dots, x_m, x_i'} |f(x_1, \dots, x_m) - f(x_1, \dots, x_{i-1}, x_i', x_{i+1}, \dots, x_m)| \le c_i$$
+Then we have 
+$$P( f(x_1, \dots, x_m) - \E[f(x_1, \dots, x_m)] \ge \epsilon) \le \exp(\frac{-2\epsilon^2}{\sum_i c_i^2})$$
+
+Note that Hoeffding inequation can be seen as a special case of McDiarmid inequality. If we assign $$f(x_1, \dots, x_m) = \frac{1}{m} \sum_{i=1}^m x_i$$ then we have $c_i = \frac{1}{m}$, thus the Hoeffding inequality holds.
+
+\end{frame}
+\begin{frame}[allowframebreaks]{PAC Learning}
+The concept $c$, is the target of our learning, it can be seen as ground truth. And the set of all concepts form a concept class $\mathcal{C}$. And we also have some learning algorithm $\mathcal{L}$ that assumes some range of possible hypothesis $\mathcal{H}$. For example, we may want to predict tomorrow's temperature based on the temperature of the past week. We may consider two models, the first one is Gaussian process, the second one is based on some if-else and output three discrete values, say, 15, 20, 25 degree. We may say the hypothesis space $\mathcal{H}_1$ of the first model is too large, and the hypothesis space $\mathcal{H}_2$ is too small because we know the concept $\mathcal{C}$ should be some continuous value neither too small nor too large.
+
+\framebreak
+
+PAC identify:
+There exists learning algorithm $\mathcal{L}$ which can produce final hypothesis $h\in \mathcal{H}$ that satisfies
+$$P(E(h) \le \epsilon) \ge 1 - \delta$$
+This means the learning algorithm $\mathcal{L}$ find the right hypothesis $h$ from $\mathcal{H}$ at error $\epsilon$ with probability $1 - \delta$. \\
+PAC learnable: the sample number $m$ needed to learn in the hypothesis space is a polynomial w.r.t $\frac{1}{\epsilon}, \frac{1}{\delta}, \text{size}(\x), \text{size}(c)$. \\
+efficiently PAC learnable: the running time is also polynomial.
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Finite hypothesis space}
+We will now discuss
+\end{frame}
+
+\begin{frame}[allowframebreaks]{VC dimension}
+% VC dimension can be seen as a way to measure the complexity of the model $\H$. First we introduce the concept of the growth function.
+% $$\Pi_\H(m) = \max_{\{\x_1, \dots, \x_m\} \subset \mathcal{X}} |\{ (h(\x_1), \dots, h(\x_m) | h\in \H\}$$
+% This quantifies, given $m$ samples, how many different configuration can we assign to the best dataset $D$(the maximum is $2^m$). If $\Pi_\H(m) = 2^m$, we say the model $\H$ \textbf{scatter} the dataset $D$. 
+The VC dimension can be defined as
+$$VC(\H) = \max \{ m: \Pi_{\H}(m) = 2^m\}$$
+which is the max sample size $m$ that can be scattered by model $\H$. This is to say, if there \textbf{exists} dataset of size $d$ that can be \textbf{scattered} by $\H$, but there does not exist any dataset of size $d+1$ that can be \textbf{scattered} by $\H$, then we say the VC dimension of model $\H$ is $d$.
+
+Theorem tells us that
+$$P(| E(h) - \hat{E}(h) | > \epsilon ) \le 4 \Pi_\H(2m) \exp(- \frac{m\epsilon^2}{8})$$
+There are close relation between the growth function and the VC dimension. If the VC dimension of the hypothesis space $\H$ is $d$, then for any $m \in \mathbb{N}$, we have
+$$\Pi_\H (m) \le \sum_{i=0}^d \binom{m}{i}$$
+From this conclusion, we can get a bound
+For a hypothesis space $\mathcal{H}$ of VC dimension $d$,
+$$\Pi_\H (m) \le (\frac{e \cdot m}{d})^d$$
+This means the number of different configuration of a hypothesis space $\mathcal{H}$ of VC dimension $d$ is bounded by $(\frac{e \cdot m}{d})^d$. With this, we can further have 
+
+\end{frame}
+
+\begin{frame}{agnostic PAC learnable}
+When the target concept $c \notin \H$, then it is imposssible for learning algorithm $\mathcal{L}$ to learn the $\epsilon$ approximation of the target concept $c$. But there exists a hypothesis that minimizes the generalization error in the hypothesis space $\H$. The goal of \textbf{agnostic learning} is to learning a hypothesis $h$ in $\H$ such that 
+$$P(E(h) - \min_{h' \in \H} E(h') \le \epsilon) \ge 1 - \delta$$
+Knowing the concept of agnostic PAC learnable, we have the following statement, every hypothesis space $\H$ with finite VC dimension is agnostic PAC learnable.
+The target of learning is 
+$$E(g) = \min_{h \in \H} E(h)$$
+We want to prove that the output $h$ of the learning algorithm is close to the $g$ which has the minimal generalization error in the hypothesis space $\mathcal{H}$.
+\end{frame}
+
+\begin{frame}{Rademacher Complexity}
+
+
+\end{frame}
+
+\end{document}
